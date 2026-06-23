@@ -1,0 +1,23 @@
+{
+  "name": "injectguard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Indirect prompt-injection lab + model robustness leaderboard.",
+  "scripts": {
+    "spike": "tsx spike/promptfoo-spike.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@types/node": "^25.9.3",
+    "node-html-parser": "^7.1.0",
+    "promptfoo": "^0.121.17",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.9"
+  }
+}
