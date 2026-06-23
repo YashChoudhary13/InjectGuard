@@ -19,8 +19,12 @@
 | Google | Gemini Flash | `GOOGLE_API_KEY` | cheap flash tier only — NOT Gemini Pro |
 | OpenRouter | **DeepSeek V4 Flash ONLY** | `OPENROUTER_API_KEY` | slug TBD at wire-time (e.g. `deepseek/deepseek-v4-flash`); never any other model |
 
-Exact model slugs are confirmed when wiring T6 (the harness adapters). Until then, treat the
-provider+tier above as the contract.
+Slugs are now wired in code — single source of truth is **`src/harness/models.ts`** (`MODELS`):
+Groq `llama-3.3-70b-versatile` · Google `gemini-2.0-flash` · OpenRouter `deepseek/deepseek-v4-flash`.
+Edit them there if a slug needs changing at wire-time. The OpenRouter guardrail is enforced in code
+(`assertOpenRouterModelAllowed` + the `OPENROUTER_ALLOWED_MODELS` allowlist) — a non-DeepSeek
+OpenRouter model throws before any network call. Leaderboard data is committed at `data/results.json`
+(`npm run precompute` = free synthetic default; `npm run precompute:live` = real billed run).
 
 ## Judge model
 - The LLM-as-judge (judge.ts layer 3) should use **one cheap, reliable model** — default

@@ -7,17 +7,27 @@
   "scripts": {
     "spike": "tsx spike/promptfoo-spike.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "precompute": "tsx scripts/precomputeLeaderboard.ts",
+    "precompute:live": "tsx scripts/precomputeLeaderboard.ts --live",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
     "@types/node": "^25.9.3",
+    "next": "^16.2.9",
     "node-html-parser": "^7.1.0",
     "promptfoo": "^0.121.17",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "vitest": "^4.1.9"
   }
 }

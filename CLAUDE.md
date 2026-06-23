@@ -15,10 +15,13 @@ evals/measurement, security depth, a deployed demo. (Pivoted from a now-dead pro
 The builder is a CS undergrad, strong in TypeScript, weak in Python — **stay in TypeScript.**
 
 ## Commands
-- `npm test` — run the vitest suite (currently **35 tests, all green**)
+- `npm test` — run the vitest suite (currently **94 tests, all green**)
 - `npm run test:watch` — watch mode
 - `npm run spike` — the promptfoo gate spike (T1)
-- Next.js dev/build scripts get added in T7/T8 (UI not scaffolded yet)
+- `npm run dev` — Next.js dev server (open `/leaderboard`)
+- `npm run build` — Next.js production build (typechecks + SSG prerender)
+- `npm run precompute` — regenerate `data/results.json` with synthetic data (free, no keys needed)
+- `npm run precompute:live` — regenerate with real model calls (requires `.env` with API keys)
 
 ## Conventions (follow these)
 - **TDD is mandatory.** Write the failing test first, watch it fail for the right reason, then
@@ -55,20 +58,35 @@ The builder is a CS undergrad, strong in TypeScript, weak in Python — **stay i
 - Keys are in `.env` (git-ignored): `GROQ_API_KEY`, `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`.
 
 ## Status (keep this current as you work)
-- ✅ **T1** promptfoo gate · ✅ **T2** sanitize · ✅ **T3** canary · ✅ **T4** judge · ✅ **T5** corpus — **35 tests green**.
-- ⏭️ **Next: T6** harness — `buildPoisonedContent(cleanPage, payload, canary)` applies each
-  technique → promptfoo wrapper → offline precompute script → `results.json`. Then T7 leaderboard
-  UI, T8 playground, T9 before/after eval, T10 case study, T11 README/deploy/demo, T12 design shell.
+- ✅ **T1** promptfoo gate · ✅ **T2** sanitize · ✅ **T3** canary · ✅ **T4** judge · ✅ **T5** corpus
+- ✅ **T6** harness (`src/harness/`) — poison builder · runAttack · model adapters · promptfoo wrapper · aggregate · precompute script · `data/results.json` (synthetic, committed)
+- ✅ **T7** leaderboard UI (`pages/leaderboard.tsx`) — SSG via `getStaticProps`, never computes in-request — **94 tests green**
+- ⏭️ **Next: T8** playground — sandboxed iframe/CSP render, single live-attack API route, cached demo pages, 60s budget + rate limit
+- 🔑 **Blocker for live data:** `.env` missing — add `GROQ_API_KEY`, `GOOGLE_API_KEY`, `OPENROUTER_API_KEY` then run `npm run precompute:live` to flip leaderboard from synthetic → live
 
 ## Repo map
 ```
-src/defense/sanitize.ts   normalizeUnicode · stripHtml · tagUntrusted · sanitize
-src/defense/canary.ts     makeCanary · plantCanary · detectLeak
-src/judge/judge.ts        buildJudgePrompt · judge (3-layer, LLM injected)
-src/corpus/schema.ts      zod schema (5 techniques × 3 goals)
-src/corpus/loader.ts      parseCorpus (validate + dedupe) · loadCorpus
-src/corpus/attacks.json   seed attack payloads
-spike/promptfoo-spike.ts  the passing T1 gate
-docs/                     PLANNING.md · PROGRESS.md · MODELS.md · design.md · test-plan.md · design-preview.html
-DESIGN.md                 the visual design system (Instrument / Redaction)
+src/defense/sanitize.ts          normalizeUnicode · stripHtml · tagUntrusted · sanitize
+src/defense/canary.ts            makeCanary · plantCanary · detectLeak
+src/judge/judge.ts               buildJudgePrompt · judge (3-layer, LLM injected)
+src/corpus/schema.ts             zod schema (5 techniques × 3 goals)
+src/corpus/loader.ts             parseCorpus (validate + dedupe) · loadCorpus
+src/corpus/attacks.json          6 seed attack payloads
+src/harness/poison.ts            buildPoisonedContent (per-technique embedder, pure)
+src/harness/runAttack.ts         one end-to-end attack (victim + judge injected)
+src/harness/models.ts            MODELS roster · assertOpenRouterModelAllowed · getModelConfig
+src/harness/adapters.ts          createGroqAdapter · createGeminiAdapter · createOpenRouterAdapter · createRunnerForModel
+src/harness/promptfooRunner.ts   inProcessEvaluate · makeVictimProvider · buildSuite · runHarness
+src/harness/results.ts           aggregate() → ResultsFile · ModelStat · CompactRun
+src/harness/simulate.ts          simulateVictim (FNV-1a, deterministic) · simulateJudge
+src/harness/precompute.ts        precompute() orchestration (all I/O injected)
+scripts/precomputeLeaderboard.ts CLI: synthetic default / --live / --models / --concurrency / --out
+data/results.json                committed leaderboard data (synthetic; run precompute:live to refresh)
+pages/_app.tsx                   Next.js app shell (imports globals.css)
+pages/index.tsx                  static landing page
+pages/leaderboard.tsx            SSG leaderboard — getStaticProps reads data/results.json
+styles/globals.css               full DESIGN.md implementation (CSS variables, JetBrains Mono, gauges)
+spike/promptfoo-spike.ts         T1 gate (mock provider, no cost)
+docs/                            PLANNING.md · PROGRESS.md · MODELS.md · design.md · test-plan.md · design-preview.html
+DESIGN.md                        the visual design system (Instrument / Redaction)
 ```

@@ -7,6 +7,8 @@
  * decision is validated and we can build on it. If it throws, we pivot the harness.
  */
 
+export {}; // make this a module so top-level await type-checks under tsc
+
 // Must be set before promptfoo loads, so we use a dynamic import below.
 process.env.PROMPTFOO_DISABLE_TELEMETRY = "1";
 process.env.PROMPTFOO_DISABLE_UPDATE = "1";

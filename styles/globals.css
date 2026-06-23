@@ -1,0 +1,502 @@
+/* InjectGuard — "Instrument / Redaction" (see DESIGN.md).
+   JetBrains Mono only · warm bone ink on near-black · red = hijacked · green = blocked. */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap");
+
+:root {
+  --bg: #08090b;
+  --bg2: #0e0f13;
+  --line: #23252b;
+  --line2: #15171b;
+  --ink: #e9e4d8;
+  --mut: #827e72;
+  --faint: #4a4840;
+  --red: #ff453a;
+  --grn: #35c26b;
+  --amber: #e0a33e;
+  --gutter: 28px;
+  --maxw: 1120px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+
+a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--faint);
+}
+a:hover {
+  border-bottom-color: var(--red);
+}
+
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* ---- system status bar ---- */
+.statusbar {
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.statusbar .row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 44px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+.statusbar .brand {
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+.statusbar .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 0;
+  background: var(--grn);
+  display: inline-block;
+}
+.statusbar .spacer {
+  margin-left: auto;
+}
+
+/* ---- page header ---- */
+.head {
+  padding: 48px 0 22px;
+  border-bottom: 1px solid var(--line);
+}
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mut);
+  margin: 0 0 14px;
+}
+h1 {
+  font-size: clamp(32px, 6vw, 64px);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.96;
+  text-transform: uppercase;
+  margin: 0;
+}
+h1 .sig {
+  color: var(--red);
+}
+.lede {
+  max-width: 64ch;
+  color: var(--ink);
+  margin: 18px 0 0;
+  font-size: 15px;
+}
+
+/* ---- readout / provenance line ---- */
+.readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  padding: 14px 0;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mut);
+  border-bottom: 1px solid var(--line);
+}
+.readout b {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ---- synthetic-data banner (honest provenance) ---- */
+.banner {
+  margin: 18px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.banner.live {
+  border-color: var(--grn);
+  color: var(--grn);
+}
+
+/* ---- leaderboard table ---- */
+.board {
+  margin: 22px 0 48px;
+}
+.board .colhead,
+.board .lbrow {
+  display: grid;
+  grid-template-columns: 46px 1fr 150px 110px 84px;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 8px;
+  border-bottom: 1px solid var(--line2);
+}
+.board .colhead {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mut);
+  border-bottom: 1px solid var(--line);
+}
+.board .lbrow {
+  border-left: 2px solid transparent;
+}
+.board .lbrow:hover {
+  background: var(--bg2);
+}
+.board .lbrow.top {
+  border-left-color: var(--red);
+}
+.rank {
+  font-weight: 700;
+  color: var(--mut);
+}
+.lbrow.top .rank {
+  color: var(--red);
+}
+.model .name {
+  font-weight: 500;
+  color: var(--ink);
+}
+.model .meta {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.num.red {
+  color: var(--red);
+}
+.num.grn {
+  color: var(--grn);
+}
+.colhead .num {
+  text-align: right;
+}
+
+/* ---- before/after gauge ---- */
+.gauge {
+  display: grid;
+  gap: 6px;
+}
+.track {
+  position: relative;
+  height: 8px;
+  background: var(--line2);
+}
+.track > span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  transform-origin: left;
+}
+.track.off > span {
+  background: var(--red);
+}
+.track.on > span {
+  background: var(--grn);
+}
+.gaugelabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+
+/* ---- per-technique panel ---- */
+.tech {
+  margin: 0 8px 26px;
+  border: 1px solid var(--line2);
+}
+.tech > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 12px 14px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mut);
+  background: var(--bg2);
+}
+.tech > summary::-webkit-details-marker {
+  display: none;
+}
+.tech > summary:hover {
+  color: var(--ink);
+}
+.tech table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.tech th,
+.tech td {
+  text-align: left;
+  padding: 9px 14px;
+  border-top: 1px solid var(--line2);
+}
+.tech th {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+  font-weight: 500;
+}
+.tech td.n {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- verdict chip (icon + text, never colour alone) ---- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.chip.blocked {
+  color: var(--grn);
+}
+.chip.hijacked {
+  color: var(--red);
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 22px 0 60px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* ---- playground ---- */
+.pg-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 18px;
+  padding: 24px 0 22px;
+  border-bottom: 1px solid var(--line);
+}
+.pg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pg-field--toggle {
+  flex-direction: column;
+}
+.pg-field--run {
+  margin-left: auto;
+}
+.pg-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+.pg-select {
+  background: var(--bg2);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  font-family: inherit;
+  font-size: 13px;
+  padding: 7px 10px;
+  cursor: pointer;
+  min-width: 220px;
+}
+.pg-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pg-toggle {
+  display: flex;
+}
+.pg-toggle-btn {
+  background: var(--bg2);
+  color: var(--mut);
+  border: 1px solid var(--line);
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.pg-toggle-btn + .pg-toggle-btn {
+  border-left: none;
+}
+.pg-toggle-btn.active {
+  background: var(--line);
+  color: var(--ink);
+}
+.pg-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pg-run {
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 9px 22px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pg-run:hover:not(:disabled) {
+  background: var(--red);
+  color: #fff;
+}
+.pg-run:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pg-result {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 28px 0 48px;
+}
+.pg-left,
+.pg-right {
+  display: flex;
+  flex-direction: column;
+}
+.pg-section-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mut);
+  margin: 0 0 8px;
+}
+.pg-dim {
+  color: var(--faint);
+}
+.pg-iframe {
+  width: 100%;
+  height: 320px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.pg-pre {
+  background: var(--bg2);
+  border: 1px solid var(--line2);
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  flex: 1;
+}
+.pg-response {
+  max-height: 180px;
+  overflow-y: auto;
+}
+.pg-verdict-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.pg-method {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+.pg-reason {
+  font-size: 12px;
+  color: var(--mut);
+  margin: 0;
+}
+.pg-meta {
+  border-collapse: collapse;
+  font-size: 12px;
+  width: 100%;
+}
+.pg-meta tr {
+  border-bottom: 1px solid var(--line2);
+}
+.pg-meta-k {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding: 7px 14px 7px 0;
+  white-space: nowrap;
+}
+.pg-meta td {
+  padding: 7px 0;
+}
+
+.pg-empty {
+  padding: 48px 0;
+  color: var(--mut);
+  font-size: 13px;
+  border-bottom: 1px solid var(--line2);
+}
+
+@media (max-width: 720px) {
+  .pg-result {
+    grid-template-columns: 1fr;
+  }
+  .pg-field--run {
+    margin-left: 0;
+    width: 100%;
+  }
+  .pg-run {
+    width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .board .colhead {
+    display: none;
+  }
+  .board .lbrow {
+    grid-template-columns: 36px 1fr 96px;
+  }
+  .board .lbrow .gaugecell,
+  .board .lbrow .deltacell {
+    display: none;
+  }
+}

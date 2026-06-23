@@ -41,9 +41,14 @@ thing with cost awareness. NOT a business.
 - [x] **T3** `defense/canary.ts` — plant + detect leak (8 tests).
 - [x] **T4** `judge/judge.ts` — injection-resistant 3-layer judge, LLM injected (5 tests).
 - [x] **T5** `corpus/` — zod schema + validating loader + 6 seed payloads (6 tests).
-- [ ] **T6** `harness/` — `buildPoisonedContent(cleanPage, payload, canary)` per technique +
-      promptfoo wrapper + offline precompute script → `results.json`. **(NEXT)**
-- [ ] **T7** leaderboard page — render `results.json`, per-row tested-date + model version.
+- [x] **T6** `harness/` — poison builder (per technique) + runAttack + model adapters
+      (Groq/Gemini/OpenRouter→DeepSeek, fetch injected) + promptfoo wrapper + `aggregate()` +
+      offline precompute script → **`data/results.json`** (committed). `npm run precompute`
+      (synthetic, free default) / `npm run precompute:live` (real models). Slugs centralized in
+      `src/harness/models.ts`.
+- [x] **T7** leaderboard page — Next.js `/leaderboard`, `getStaticProps` reads `data/results.json`
+      (SSG, no in-request compute); per-model OFF/ON/Δ + per-technique panels + dated/mode stamps.
+      **(NEXT: T8 playground, T9 before/after eval)**
 - [ ] **T8** playground — cached demo pages, sandboxed iframe/CSP render, single live-attack API,
       60s budget + rate limit.
 - [ ] **T9** defense before/after eval (3 models × ~25 attacks) + per-technique bypass breakdown.
