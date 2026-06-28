@@ -31,7 +31,7 @@ thing with cost awareness. NOT a business.
 ## Baked-in requirements (from the outside-voice review)
 - Sandboxed iframe + locked CSP for rendering poisoned content (SECURITY-CRITICAL).
 - Each leaderboard row shows "tested {date}, model {version}".
-- Playground defaults to curated cached demo pages; live-URL fetch is opt-in + budget-limited.
+- Playground supports curated cached demo pages plus pasted user HTML/text; live-URL fetch remains out of scope.
 - Clear BIPIA (or any reused) corpus licensing, or author originals and say so.
 - Writeup leads with the per-technique bypass breakdown.
 
@@ -49,9 +49,9 @@ thing with cost awareness. NOT a business.
 - [x] **T7** leaderboard page — Next.js `/leaderboard`, `getStaticProps` reads `data/results.json`
       (SSG, no in-request compute); per-model OFF/ON/Δ + per-technique panels + dated/mode stamps.
       **(NEXT: T8 playground, T9 before/after eval)**
-- [x] **T8** playground — cached demo pages (`data/pages.json`), sandboxed iframe/CSP render
-      (`next.config.mjs` headers + `<iframe sandbox="">`), single live-attack API (`pages/api/attack.ts`),
-      60s budget + rate limit. 117 tests green. 2026-06-26.
+- [x] **T8** playground — cached demo pages (`data/pages.json`), pasted custom HTML/text,
+      sandboxed iframe/CSP render (`next.config.mjs` headers + `<iframe sandbox="">`), single
+      live-attack API (`pages/api/attack.ts`), JSON report, 60s budget + rate limit. 2026-06-28.
 - [x] **T12** design tokens + JetBrains Mono + base layout shell + a11y primitives
       (`:focus-visible`, `prefers-reduced-motion`) in `styles/globals.css`. 2026-06-26.
 - [ ] **T9** defense before/after eval (3 models × ~25 attacks) + per-technique bypass breakdown.

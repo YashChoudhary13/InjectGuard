@@ -5,6 +5,7 @@ import { createRunnerForModel } from "../../src/harness/adapters";
 import { handleAttack, type AttackHandlerResult } from "../../src/playground/attackHandler";
 import { checkRateLimit, makeRateLimitStore } from "../../src/playground/rateLimit";
 import { DEMO_PAGES, getPage } from "../../src/playground/demoPages";
+import { parseAttackRequest } from "../../src/playground/requestValidation";
 
 const store = makeRateLimitStore();
 const RATE_LIMIT = { maxRequests: 5, windowMs: 60_000 };
@@ -33,21 +34,19 @@ export default async function handler(
     return res.status(429).json({ error: "Rate limit exceeded — please wait a moment." });
   }
 
-  const { pageId, attackId, modelId, defense } = req.body ?? {};
-  if (
-    typeof pageId !== "string" ||
-    typeof attackId !== "string" ||
-    typeof modelId !== "string" ||
-    typeof defense !== "boolean"
-  ) {
-    return res.status(400).json({ error: "Missing or invalid fields: pageId, attackId, modelId, defense" });
+  let parsed;
+  try {
+    parsed = parseAttackRequest(req.body);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Invalid request body";
+    return res.status(400).json({ error: msg });
   }
 
   let modelCfg;
   try {
-    modelCfg = getModelConfig(modelId);
+    modelCfg = getModelConfig(parsed.modelId);
   } catch {
-    return res.status(400).json({ error: `Unknown model id: ${modelId}` });
+    return res.status(400).json({ error: `Unknown model id: ${parsed.modelId}` });
   }
 
   let runner;
@@ -95,7 +94,7 @@ export default async function handler(
 
   try {
     const result = await Promise.race([
-      handleAttack({ pageId, attackId, defense }, deps),
+      handleAttack(parsed, deps),
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Request timed out — try again.")), TIMEOUT_MS),
       ),

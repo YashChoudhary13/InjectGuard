@@ -108,4 +108,56 @@ describe("handleAttack", () => {
     );
     expect(makeCanary).toHaveBeenCalledOnce();
   });
+
+  it("uses custom page content without looking up a demo page", async () => {
+    const getPage = vi.fn(() => {
+      throw new Error("demo lookup should not run");
+    });
+    const result = await handleAttack(
+      {
+        customPage: {
+          title: "Customer Docs",
+          html: "<article><h1>Customer onboarding</h1><p>Do not share internal links.</p></article>",
+        },
+        attackId: "hidden-text-01",
+        defense: false,
+      },
+      makeDeps({ getPage }),
+    );
+
+    expect(getPage).not.toHaveBeenCalled();
+    expect(result.pageTitle).toBe("Customer Docs");
+    expect(result.poisonedContent).toContain("Customer onboarding");
+  });
+
+  it("returns a report describing the completed run", async () => {
+    const result = await handleAttack(
+      {
+        customPage: { title: "Portfolio", html: "<main>Case study page</main>" },
+        attackId: "hidden-text-01",
+        defense: true,
+        modelId: "groq-llama",
+      },
+      makeDeps(),
+    );
+
+    expect(result.report).toMatchObject({
+      pageTitle: "Portfolio",
+      attackId: "hidden-text-01",
+      technique: "hidden-text",
+      goal: "canary-exfiltration",
+      modelId: "groq-llama",
+      defense: true,
+      hijacked: false,
+      method: "llm",
+      reason: "model did not reveal the token",
+    });
+    expect(Date.parse(result.report.generatedAt)).not.toBeNaN();
+  });
+
+  it("throws when neither a demo page nor a custom page is provided", async () => {
+    await expect(
+      handleAttack({ attackId: "hidden-text-01", defense: false }, makeDeps()),
+    ).rejects.toThrow("Provide either pageId or customPage");
+  });
 });

@@ -11,10 +11,17 @@ export interface DemoPageRef {
   title: string;
 }
 
+export interface CustomPageInput {
+  html: string;
+  title: string;
+}
+
 export interface AttackHandlerInput {
-  pageId: string;
+  pageId?: string;
+  customPage?: CustomPageInput;
   attackId: string;
   defense: boolean;
+  modelId?: string;
 }
 
 export interface AttackHandlerDeps {
@@ -32,13 +39,40 @@ export interface AttackHandlerResult extends AttackResult {
   poisonedContent: string;
   /** Sanitized text — shown as a comparison alongside the iframe. */
   sanitizedContent: string;
+  report: AttackRunReport;
+}
+
+export interface AttackRunReport {
+  generatedAt: string;
+  pageTitle: string;
+  attackId: string;
+  technique: AttackPayload["technique"];
+  goal: AttackPayload["goal"];
+  modelId: string | null;
+  defense: boolean;
+  hijacked: boolean;
+  method: AttackResult["method"];
+  reason: string;
+}
+
+function resolvePage(input: AttackHandlerInput, getPage: AttackHandlerDeps["getPage"]): DemoPageRef {
+  if (input.customPage && input.pageId) {
+    throw new Error("Provide either pageId or customPage, not both");
+  }
+  if (input.customPage) {
+    return input.customPage;
+  }
+  if (input.pageId) {
+    return getPage(input.pageId);
+  }
+  throw new Error("Provide either pageId or customPage");
 }
 
 export async function handleAttack(
   input: AttackHandlerInput,
   deps: AttackHandlerDeps,
 ): Promise<AttackHandlerResult> {
-  const page = deps.getPage(input.pageId);
+  const page = resolvePage(input, deps.getPage);
   const payload = deps.getAttack(input.attackId);
   const makeCanary = deps.makeCanary ?? defaultMakeCanary;
 
@@ -60,5 +94,17 @@ export async function handleAttack(
     pageTitle: page.title,
     poisonedContent: poisoned,
     sanitizedContent: sanitized,
+    report: {
+      generatedAt: new Date().toISOString(),
+      pageTitle: page.title,
+      attackId: payload.id,
+      technique: payload.technique,
+      goal: payload.goal,
+      modelId: input.modelId ?? null,
+      defense: input.defense,
+      hijacked: result.hijacked,
+      method: result.method,
+      reason: result.reason,
+    },
   };
 }

@@ -114,7 +114,7 @@ Hard spend cap: **~$100 for v1 total** (never approached with cheap tiers).
 # Install
 npm install
 
-# Run tests (205 green, no API keys needed)
+# Run tests (220 green, no API keys needed)
 npm test
 
 # Local dev server
@@ -156,7 +156,7 @@ TypeScript end-to-end. No Python.
 | Layer | Tool |
 |---|---|
 | Framework | Next.js 16 (pages router) |
-| Tests | vitest (205 tests) |
+| Tests | vitest (220 tests) |
 | Batch eval | promptfoo (TS library) |
 | HTML parsing | node-html-parser |
 | Schema validation | zod |
@@ -181,7 +181,7 @@ src/corpus/       zod schema · loader · 25 seed attacks
 src/harness/      poison builder · runAttack · model adapters · promptfoo runner · precompute
 src/eval/         evaluateJudge · 50 hand-labeled accuracy samples
 src/casestudy/    16 sandbox tests — real-world Bing Chat technique classes
-pages/            leaderboard (SSG) · playground · landing
+pages/            leaderboard (SSG) · playground with pasted-page testing · landing
 pages/api/        /api/attack — rate-limited (5/min) · 50s timeout
 data/             results.json (leaderboard) · judge-eval.json (labeled set) · pages.json
 scripts/          precomputeLeaderboard · evalJudge

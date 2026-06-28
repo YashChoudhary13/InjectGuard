@@ -15,7 +15,7 @@ evals/measurement, security depth, a deployed demo. (Pivoted from a now-dead pro
 The builder is a CS undergrad, strong in TypeScript, weak in Python — **stay in TypeScript.**
 
 ## Commands
-- `npm test` — run the vitest suite (currently **208 tests, all green**)
+- `npm test` — run the vitest suite (currently **220 tests, all green**)
 - `npm run test:watch` — watch mode
 - `npm run spike` — the promptfoo gate spike (T1)
 - `npm run dev` — Next.js dev server (open `/leaderboard`)
@@ -62,7 +62,7 @@ The builder is a CS undergrad, strong in TypeScript, weak in Python — **stay i
 - ✅ **T1** promptfoo gate · ✅ **T2** sanitize · ✅ **T3** canary · ✅ **T4** judge · ✅ **T5** corpus
 - ✅ **T6** harness (`src/harness/`) — poison builder · runAttack · model adapters · promptfoo wrapper · aggregate · precompute script · `data/results.json` (synthetic, committed)
 - ✅ **T7** leaderboard UI (`pages/leaderboard.tsx`) — SSG via `getStaticProps`, never computes in-request
-- ✅ **T8** playground (`pages/playground.tsx` · `pages/api/attack.ts` · `src/playground/`) — sandboxed iframe + CSP headers + live attack API + rate limit (5/min) + 50s timeout — **117 tests green**
+- ✅ **T8** playground (`pages/playground.tsx` · `pages/api/attack.ts` · `src/playground/`) — sandboxed iframe + CSP headers + live attack API + custom pasted-page testing + JSON report + rate limit (5/min) + 50s timeout
 - ✅ **T12** design tokens + JetBrains Mono + base layout shell + a11y primitives (`styles/globals.css`)
 - ⏳ **T9 (partial):** corpus expanded (25 attacks), judge accuracy eval harness complete (189 tests green). **Remaining:** run `eval:judge` + `precompute:live` with real API keys (blocked on `.env`).
 - ✅ **T10** real-world case study — Bing Chat/Copilot browsing, 5 techniques, 16 tests, `docs/case-study.md`
@@ -93,13 +93,14 @@ scripts/precomputeLeaderboard.ts CLI: synthetic default / --live / --models / --
 scripts/evalJudge.ts             CLI: runs judge accuracy eval against data/judge-eval.json
 data/judge-eval.json             50 hand-labeled samples (5 techniques × 10 each, hijacked + clean)
 data/results.json                committed leaderboard data (synthetic; run precompute:live to refresh)
-src/playground/attackHandler.ts  handleAttack (pure, deps injected) → AttackHandlerResult
+src/playground/attackHandler.ts  handleAttack (pure, deps injected) → AttackHandlerResult + report
+src/playground/requestValidation.ts parseAttackRequest (demo/custom page validation)
 src/playground/demoPages.ts      DEMO_PAGES · getPage — loads data/pages.json
 src/playground/rateLimit.ts      makeRateLimitStore · checkRateLimit (sliding window)
 pages/_app.tsx                   Next.js app shell (imports globals.css)
 pages/index.tsx                  static landing page
 pages/leaderboard.tsx            SSG leaderboard — getStaticProps reads data/results.json
-pages/playground.tsx             playground UI — selects + defense toggle + sandboxed iframe + verdict
+pages/playground.tsx             playground UI — demo/custom page source + defense toggle + sandboxed iframe + verdict + JSON report
 pages/api/attack.ts              POST /api/attack — rate limit + 50s timeout + model runner + judge
 data/pages.json                  3 curated demo pages (recipe · security blog · headphones)
 styles/globals.css               full DESIGN.md implementation (CSS vars · JetBrains Mono · gauges · focus rings · reduced-motion)

@@ -3,6 +3,28 @@
 Append-only-ish log of what's built and the decisions made along the way, so any session can
 resume instantly. Newest at the top.
 
+## 2026-06-28 — Self-serve pasted-page playground complete; 220 tests green
+
+**What changed:** The playground can now test either a curated demo page or a user-pasted page.
+Users can paste website HTML/text, provide a page title, run one attack/model/defense combination,
+and copy/download a JSON report for the completed run.
+
+**Files changed:**
+- `src/playground/attackHandler.ts` — accepts either `pageId` or `customPage`, bypasses demo lookup for custom pages, and returns `report`.
+- `src/playground/requestValidation.ts` — validates API request shape, title/html limits, and mutually exclusive page sources.
+- `pages/api/attack.ts` — uses `parseAttackRequest()` and passes `modelId` into the report.
+- `pages/playground.tsx` — adds demo/custom source toggle, custom title/body fields, and report copy/download controls.
+- `styles/globals.css` — styles custom-page fields and report actions.
+- `docs/superpowers/` — design and implementation notes for this feature.
+
+**Validation:**
+- `npm test` → **220/220 green** (20 test files)
+- `npm run build` → **clean**
+
+**Scope decision:** FreeLLMAPI support was intentionally skipped for the public demo because a
+server-side key would let visitors consume the owner's key through `/api/attack`. Custom models
+remain a future local/private testing feature.
+
 ## 2026-06-26 — T11 README + Vercel deploy complete; 208 tests green
 
 **What changed:** T11 complete. README, Vercel config, and env var completeness test all done.
