@@ -500,3 +500,41 @@ footer {
     display: none;
   }
 }
+
+/* ---- focus rings (keyboard navigation) ---- */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.pg-select:focus-visible,
+.pg-toggle-btn:focus-visible,
+.pg-run:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+/* ---- motion: honor prefers-reduced-motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .track > span {
+    transition: none !important;
+    transform: scaleX(1) !important;
+  }
+  .ticker-inner {
+    animation: none !important;
+  }
+  .scanner-sweep,
+  .decode-scramble {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .fade-up {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .redact::after {
+    transition: none !important;
+    transform: scaleX(0) !important;
+  }
+}

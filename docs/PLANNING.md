@@ -49,12 +49,16 @@ thing with cost awareness. NOT a business.
 - [x] **T7** leaderboard page — Next.js `/leaderboard`, `getStaticProps` reads `data/results.json`
       (SSG, no in-request compute); per-model OFF/ON/Δ + per-technique panels + dated/mode stamps.
       **(NEXT: T8 playground, T9 before/after eval)**
-- [ ] **T8** playground — cached demo pages, sandboxed iframe/CSP render, single live-attack API,
-      60s budget + rate limit.
+- [x] **T8** playground — cached demo pages (`data/pages.json`), sandboxed iframe/CSP render
+      (`next.config.mjs` headers + `<iframe sandbox="">`), single live-attack API (`pages/api/attack.ts`),
+      60s budget + rate limit. 117 tests green. 2026-06-26.
+- [x] **T12** design tokens + JetBrains Mono + base layout shell + a11y primitives
+      (`:focus-visible`, `prefers-reduced-motion`) in `styles/globals.css`. 2026-06-26.
 - [ ] **T9** defense before/after eval (3 models × ~25 attacks) + per-technique bypass breakdown.
-- [ ] **T10** real-world injection-surface case study + sandbox-tested defense.
-- [ ] **T11** README (problem/method/results/limits/cost) + deploy (Vercel) + 60–90s demo video.
-- [ ] **T12** design tokens + JetBrains Mono setup + base layout shell + a11y primitives.
+      Corpus expanded to 25 attacks (5/technique). Synthetic results.json (150 runs). Judge accuracy eval harness complete (189 tests, 2026-06-26).
+      **Remaining:** run `eval:judge` + `precompute:live` with real API keys (blocked on `.env`).
+- [x] **T10** real-world injection-surface case study + sandbox-tested defense. Target: Bing Chat / Copilot browsing. 5 technique classes, 16 tests, `docs/case-study.md`. 2026-06-26.
+- [x] **T11** README + Vercel deploy config complete (2026-06-26). Demo video pending (requires user). T9 live data pending (requires API keys).
 
 ## Failure modes to keep covered (tests + handling)
 - `tagUntrusted`: payload contains `</untrusted>` → must escape (DONE, tested).

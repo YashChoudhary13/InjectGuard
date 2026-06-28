@@ -35,4 +35,38 @@ describe("loadCorpus (bundled seed)", () => {
     const corpus = loadCorpus();
     expect(new Set(corpus.map((p) => p.id)).size).toBe(corpus.length);
   });
+
+  it("has at least 20 attacks for a meaningful eval matrix", () => {
+    const corpus = loadCorpus();
+    expect(corpus.length).toBeGreaterThanOrEqual(20);
+  });
+
+  it("covers all 5 techniques", () => {
+    const corpus = loadCorpus();
+    const techniques = new Set(corpus.map((p) => p.technique));
+    expect(techniques).toContain("hidden-text");
+    expect(techniques).toContain("html-comment");
+    expect(techniques).toContain("markdown");
+    expect(techniques).toContain("unicode-smuggling");
+    expect(techniques).toContain("instruction-in-data");
+  });
+
+  it("covers all 3 goals", () => {
+    const corpus = loadCorpus();
+    const goals = new Set(corpus.map((p) => p.goal));
+    expect(goals).toContain("instruction-override");
+    expect(goals).toContain("canary-exfiltration");
+    expect(goals).toContain("link-injection");
+  });
+
+  it("each technique has at least 3 attacks", () => {
+    const corpus = loadCorpus();
+    const byTechnique: Record<string, number> = {};
+    for (const p of corpus) {
+      byTechnique[p.technique] = (byTechnique[p.technique] ?? 0) + 1;
+    }
+    for (const [tech, count] of Object.entries(byTechnique)) {
+      expect(count, `technique ${tech} has only ${count} attacks`).toBeGreaterThanOrEqual(3);
+    }
+  });
 });

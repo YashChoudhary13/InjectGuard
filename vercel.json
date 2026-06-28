@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "pages/api/attack.ts": {
+      "maxDuration": 50
+    }
+  },
+  "env": {
+    "GROQ_API_KEY": "@groq_api_key",
+    "GOOGLE_API_KEY": "@google_api_key",
+    "OPENROUTER_API_KEY": "@openrouter_api_key"
+  }
+}

@@ -3,6 +3,114 @@
 Append-only-ish log of what's built and the decisions made along the way, so any session can
 resume instantly. Newest at the top.
 
+## 2026-06-26 — T11 README + Vercel deploy complete; 208 tests green
+
+**What changed:** T11 complete. README, Vercel config, and env var completeness test all done.
+
+**Files changed:**
+- `README.md` — full portfolio README: problem framing, architecture diagram, method (3-stage defense + 3-layer judge), synthetic results table (Llama 52%→0%, Gemini 24%→0%, DeepSeek 24%→0%), limits, cost table (~$0 synthetic / ~$0.50 live), how-to-run, Vercel deploy instructions, stack, project structure, corpus licensing.
+- `vercel.json` — `maxDuration: 50` for `pages/api/attack.ts` (matches the 50s abort already in the route); env var references for Vercel secrets dashboard.
+- `src/config/envExample.test.ts` — 3 tests: `.env.example` exists, declares all `envVar` entries from `MODELS`, no blank key names. Regression guard for future model additions.
+
+**Validation:**
+- `npm test` → **208/208 green** (19 test files, +3 new config tests)
+- `npm run build` → **clean**
+
+**Remaining work (all blocked or out of scope for this session):**
+- T9 live data: `npm run precompute:live` + `npm run eval:judge` — blocked on `.env` API keys
+- T11 demo video: 60–90s screen recording — requires user; can record after Vercel deploy
+
+**Deploy checklist for user:**
+1. `git init && git add -A && git commit -m "init"` (repo not yet initialized)
+2. Push to GitHub
+3. `vercel link && vercel deploy`
+4. Add 3 env vars in Vercel dashboard → redeploy
+
+## 2026-06-26 — T10 real-world case study complete; 205 tests green
+
+**What changed:** Built the T10 real-world case study using Bing Chat / Microsoft Copilot as the target. All five technique classes documented in the public research (Rehberger 2023) sandbox-tested against the real `sanitize.ts` pipeline.
+
+**Files changed:**
+- `src/casestudy/casestudy.test.ts` — 16 tests (TDD: written failing first). Five `describe` blocks, one per technique class. Tests `stripHtml`, `normalizeUnicode`, and full `sanitize` against realistic real-world payloads. All 16 pass.
+- `docs/case-study.md` — full writeup: target system, attack surface diagram, 5 technique classes with example payloads, defense explanation per technique, summary table, 4 documented limitations (raw Markdown, visible-data injection, JS-rendered content, multi-turn persistence).
+
+**Validation:**
+- `npm test` → **205/205 green** (18 test files, +16 new case study tests)
+- `npm run build` → **clean**
+
+**Note on Technique 4 correction:** Initial test used raw markdown `![alt](url)` syntax — `stripHtml` handles HTML, not markdown source, so the test was corrected to use actual `<img alt="...">` HTML, which is what Bing Chat's browsing plugin actually receives. The markdown limitation is documented in the case study writeup.
+
+## 2026-06-26 — T9 judge accuracy eval harness complete; 189 tests green
+
+**What changed:** Built the judge accuracy eval harness (TDD throughout). All 6 acceptance criteria met.
+
+**Files changed:**
+- `src/eval/judgeAccuracy.ts` — `LabeledSample`, `EvalResult`, `AccuracyReport` types + `evaluateJudge(samples, llm, opts?)` (runs existing 3-layer judge against each sample, aggregates by technique and goal) + `computeAccuracy(results)` pure helper. Default rule patterns catch verbatim hijack strings from corpus payloads.
+- `src/eval/judgeAccuracy.test.ts` — 11 tests (TDD: written failing first). Covers: result count, correct count, FP count, FN count, accuracy formula, byTechnique keys and shape, computeAccuracy edge cases (all-correct, all-wrong, half, empty).
+- `data/judge-eval.json` — 50 hand-labeled samples. 10 per technique (hidden-text, html-comment, markdown, unicode-smuggling, instruction-in-data). Each technique has hijacked and clean examples covering all 3 goals. Canary-detected, rule-detected, and LLM-required cases all represented.
+- `scripts/evalJudge.ts` — CLI runner: loads `data/judge-eval.json`, runs `evaluateJudge` with `groq-llama` as judge LLM, prints accuracy + per-technique + per-goal breakdown, writes `data/judge-eval-results.json`. Typechecks clean.
+- `package.json` — added `eval:judge` npm script.
+
+**Validation:**
+- `npm test` → **189/189 green** (17 test files, +11 new eval tests)
+- `npm run build` → **clean** — TypeScript clean, all 5 routes correct
+
+**Remaining T9 work:**
+- Run `npm run eval:judge` with real API keys (needs `GROQ_API_KEY` in `.env`) to get real judge accuracy numbers for README/leaderboard.
+- Run `npm run precompute:live` (needs all 3 keys) for real attack-success rates.
+- Both blocked on `.env` keys from user.
+
+## 2026-06-26 — T9 corpus expansion: 6 → 25 attacks, 178 tests green
+
+**What changed:** Expanded `src/corpus/attacks.json` from 6 seed attacks to 25 (5 per technique × 5 techniques). All 3 goals covered for each technique. Added 4 new corpus tests asserting ≥20 attacks, all 5 techniques, all 3 goals, and ≥3 attacks per technique. Regenerated `data/results.json` (150 runs = 3 models × 25 attacks × 2 defense states).
+
+**Files changed:**
+- `src/corpus/attacks.json` — 6 → 25 attacks (5 per technique: hidden-text, html-comment, markdown, unicode-smuggling, instruction-in-data)
+- `src/corpus/corpus.test.ts` — 4 new tests (≥20 size, all 5 techniques, all 3 goals, ≥3/technique)
+- `data/results.json` — regenerated with `npm run precompute` (synthetic, free)
+
+**Validation:**
+- `npm test` → **178/178 green** (16 test files; corpus roundtrip tests exercising all 25 attacks)
+- `npm run build` → **clean**
+- `npm run precompute` → 150 runs, 3 models, mode=synthetic
+
+**T9 remaining work:**
+- Run `npm run precompute:live` with real API keys to get real attack-success rates (blocked on `.env`)
+- Per-technique bypass breakdown is already in the leaderboard UI (`<details>` panels in `pages/leaderboard.tsx`)
+- Judge accuracy eval against a hand-labeled set (≥50 samples) — still TODO
+
+## 2026-06-26 — T8 playground + T12 a11y complete; 117 tests green
+
+**What changed:** T8 was already largely built from a prior session that didn't update PLANNING.md.
+This session added the two missing pieces (CSP headers + a11y CSS), verified everything on Linux
+ARM64, and closed the task.
+
+**Files changed:**
+- `next.config.mjs` — added CSP + X-Frame-Options, X-Content-Type-Options, Referrer-Policy,
+  Permissions-Policy. SECURITY-CRITICAL: completes the "locked CSP" requirement for the playground.
+- `styles/globals.css` — added `:focus-visible` rings (red for playground controls) +
+  `@media (prefers-reduced-motion: reduce)` block. Satisfies DESIGN.md a11y requirements.
+- `docs/SUGGESTIONS.md` — created (5 non-blocking suggestions filed).
+
+**T8 playground verified complete:**
+- `pages/playground.tsx` — sandboxed iframe, controls, verdict display, error handling
+- `pages/api/attack.ts` — rate limit (5/min per IP), 50s timeout, full error handling
+- `src/playground/` — attackHandler.ts, demoPages.ts, rateLimit.ts (all DI-injected, tested)
+- `data/pages.json` — 3 curated demo pages
+
+**T12 design tokens + a11y verified complete:**
+CSS vars, JetBrains Mono, base layout, `:focus-visible` rings, `prefers-reduced-motion`.
+
+**Validation (Linux ARM64, /home/yash-mac/.local/share/injectguard-local/):**
+- `npm test` → **117/117 green** (16 test files)
+- `npm run build` → **clean** — TypeScript clean, all 5 routes correct
+
+**Infrastructure note:** node_modules cannot install on CIFS/SMB (atomic rename ENOTEMPTY).
+**Always work in `/home/yash-mac/.local/share/injectguard-local/` and rsync back to SMB.**
+
+**Remaining work:** T9 (defense eval), T10 (case study), T11 (README + deploy + demo video).
+**Key blocker for live data:** `.env` with 3 API keys → `npm run precompute:live`.
+
 ## 2026-06-23 — Worktree reconciled into main root; session handoff
 
 All T6+T7 work was built in a Claude Code worktree (`relaxed-edison-c14161`) and has been

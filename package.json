@@ -10,6 +10,7 @@
     "test:watch": "vitest",
     "precompute": "tsx scripts/precomputeLeaderboard.ts",
     "precompute:live": "tsx scripts/precomputeLeaderboard.ts --live",
+    "eval:judge": "tsx scripts/evalJudge.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
